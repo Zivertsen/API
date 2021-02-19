@@ -3,7 +3,7 @@
 //--------------------- Function declaration -------------
 boolean readSerial(int *readS);
 
-void writeSerial(int *writeS);
+void writeSerial(int *writeS, int len);
 
 //Removes the END and ESC characters from the packet
 int unslipPacket(int *packet, int *frame);
@@ -52,6 +52,8 @@ boolean sendFrame(int *pFrame)
     writeSerial(pPacket, len);
     return true;
 }
+
+//-------------------- local functions --------------------
 
 boolean readSerial(int *readS)
 {
