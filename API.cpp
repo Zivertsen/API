@@ -20,6 +20,53 @@ void addCheckSum(int *frame);
 
 // ------------------ Function bodies ------------------------
 
+void buildFrame(uint8_t *pFrame, uint8_t command,uint8_t ch, int data )
+{
+    uint8_t tempFrame[30];
+
+    switch (command)
+    {
+    case 0x01:
+        ST_GW_VOLTAGE tempStructure;
+        tempStructure.Voltage = data;
+        tempStructure.FrameHeader.Command = command;
+        tempStructure.FrameHeader.Channel = ch;
+        tempStructure.FrameHeader.Length = 0;
+        memcpy(pframe, &tempStructure, sizeof(ST_GW_VOLTAGE));
+        break;
+    case 0x02:
+        ST_GW_CURRENT tempStructure;
+        tempStructure.Voltage = data;
+        tempStructure.FrameHeader.Command = command;
+        tempStructure.FrameHeader.Channel = ch;
+        tempStructure.FrameHeader.Length = 0;
+        memcpy(pframe, &tempStructure, sizeof(ST_GW_CURRENT));
+        break;
+    case 0x03:
+        ST_GW_SET_CURRENT tempStructure;
+        tempStructure.Voltage = data;
+        tempStructure.FrameHeader.Command = command;
+        tempStructure.FrameHeader.Channel = ch;
+        tempStructure.FrameHeader.Length = 0;
+        memcpy(pframe, &tempStructure, sizeof(ST_GW_SET_CURRENT));
+        break;
+    case 0x04:
+        ST_GW_ACTIVATION tempStructure;
+        tempStructure.Voltage = data;
+        tempStructure.FrameHeader.Command = command;
+        tempStructure.FrameHeader.Channel = ch;
+        tempStructure.FrameHeader.Length = 0;
+        memcpy(pframe, &tempStructure, sizeof(ST_GW_ACTIVATION));
+        break;
+    default:
+        Serial.print("Warring, %d is not a command", command);
+        break;
+    }
+    
+
+
+}
+
 boolean getFrame(int *pFrame){
     int index; 
     static int pPacket[25];
@@ -43,7 +90,7 @@ boolean getFrame(int *pFrame){
 boolean sendFrame(int *pFrame)
 {
     int tempPFrame[25];
-    int pPacket[25] = 0;
+    int pPacket[25] = {0};
     int len = 0;
     memcpy(tempPFrame, pFrame, sizeof(pFrame));
     addCheckSum(tempPFrame);
