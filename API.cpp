@@ -4,19 +4,19 @@
 //--------------------- Function declaration -------------
 boolean readSerial(int *readS);
 
-void writeSerial(int *writeS, int len);
+void writeSerial(uint8_t *writeS, int len);
 
 //Removes the END and ESC characters from the packet
 int unslipPacket(int *packet, int *frame);
 
 //Make a frame ready for being sent, by adding END and ESC charaters
-int slipPacket(int *frame, int *packet);
+int slipPacket(uint8_t *frame, uint8_t *packet);
 
 // checks the checksum and remove it 
 boolean confirmCheckSum(int *frame);
 
 // calculate the checksum by XOR the values and adds it to the frame
-void addCheckSum(int *frame);
+void addCheckSum(uint8_t *frame);
 
 
 // ------------------ Function bodies ------------------------
@@ -25,8 +25,10 @@ uint16_t builtinBitswap(uint16_t data)
     return (data >> 8) | (data << 8);
 }
 
-void buildFrame(uint8_t *pFrame, uint8_t command, uint8_t ch, uint16_t data )
+void buildandSendFrame(uint8_t command, uint8_t ch, uint16_t data )
 {
+
+    uint8_t pFrame[10];
     switch (command)
     {
     case 0x01:
@@ -34,7 +36,7 @@ void buildFrame(uint8_t *pFrame, uint8_t command, uint8_t ch, uint16_t data )
         tempVoltageStructure.Voltage = builtinBitswap(data);
         tempVoltageStructure.FrameHeader.Command = command;
         tempVoltageStructure.FrameHeader.Channel = ch;
-        tempVoltageStructure.FrameHeader.Length = 0;
+        tempVoltageStructure.FrameHeader.Length = sizeof(ST_GW_VOLTAGE);
         memcpy(pFrame, &tempVoltageStructure, sizeof(ST_GW_VOLTAGE));
         break;
     case 0x02:
@@ -42,7 +44,7 @@ void buildFrame(uint8_t *pFrame, uint8_t command, uint8_t ch, uint16_t data )
         tempCurrentStructure.Current = builtinBitswap(data);
         tempCurrentStructure.FrameHeader.Command = command;
         tempCurrentStructure.FrameHeader.Channel = ch;
-        tempCurrentStructure.FrameHeader.Length = 0;
+        tempCurrentStructure.FrameHeader.Length = sizeof(ST_GW_CURRENT);
         memcpy(pFrame, &tempCurrentStructure, sizeof(ST_GW_CURRENT));
         break;
     case 0x03:
@@ -50,7 +52,7 @@ void buildFrame(uint8_t *pFrame, uint8_t command, uint8_t ch, uint16_t data )
         tempSetCurrentStructure.SetCurrent = builtinBitswap(data);
         tempSetCurrentStructure.FrameHeader.Command = command;
         tempSetCurrentStructure.FrameHeader.Channel = ch;
-        tempSetCurrentStructure.FrameHeader.Length = 0;
+        tempSetCurrentStructure.FrameHeader.Length = sizeof(ST_GW_NO_DATA);
         memcpy(pFrame, &tempSetCurrentStructure, sizeof(ST_GW_SET_CURRENT));
         break;
     case 0x04:
@@ -58,15 +60,16 @@ void buildFrame(uint8_t *pFrame, uint8_t command, uint8_t ch, uint16_t data )
         tempActivationStructure.Activation = data;
         tempActivationStructure.FrameHeader.Command = command;
         tempActivationStructure.FrameHeader.Channel = ch;
-        tempActivationStructure.FrameHeader.Length = 0;
+        tempActivationStructure.FrameHeader.Length = sizeof(ST_GW_ACTIVATION);
         memcpy(pFrame, &tempActivationStructure, sizeof(ST_GW_ACTIVATION));
         break;
     default:
-        Serial.print("Warring");
-        Serial.print(command);
-        Serial.println("is not a command");
+        // pFrame = NULL;
         break;
     }
+
+  
+    sendFrame(pFrame);
 }
 
 boolean getFrame(int *pFrame){
@@ -89,12 +92,17 @@ boolean getFrame(int *pFrame){
     return false;
 }
 
-boolean sendFrame(int *pFrame)
+boolean sendFrame(uint8_t *pFrame)
 {
-    int tempPFrame[25];
-    int pPacket[25] = {0};
+    uint8_t tempPFrame[25] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    uint8_t pPacket[25] = {0};
     int len = 0;
-    memcpy(tempPFrame, pFrame, sizeof(pFrame));
+    if (pFrame == NULL)
+    {
+        return false;
+    }
+    memcpy(tempPFrame, pFrame, pFrame[0]);
+  
     addCheckSum(tempPFrame);
     len = slipPacket(tempPFrame, pPacket);
 
@@ -132,7 +140,7 @@ boolean readSerial(int *readS)
     return false;
 }
 
-void writeSerial(int *writeS, int len)
+void writeSerial(uint8_t *writeS, int len)
 {
     int index = 0;
     Serial.write(writeS[index]);
@@ -184,7 +192,7 @@ int unslipPacket(int *packet, int *frame)
     }
 }
 
-int slipPacket(int *f, int *p){
+int slipPacket(uint8_t *f, uint8_t *p){
     int len = f[0];
     int index = 0;
     *p = END;
@@ -221,7 +229,7 @@ int slipPacket(int *f, int *p){
     return index;
 }
 
-void addCheckSum(int *frame){
+void addCheckSum(uint8_t *frame){
     int len = frame[0]; 
     int sum = 0;
     for (int i = 0; i < len - 1; i++)

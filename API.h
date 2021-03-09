@@ -11,8 +11,8 @@
 
 boolean getFrame(int *pFrame);
 
-boolean sendFrame(int *pFrame);
+boolean sendFrame(uint8_t *pFrame);
 
-void buildFrame(uint8_t *pFrame, uint8_t command, uint8_t ch, uint16_t data );
+void buildandSendFrame(uint8_t command, uint8_t ch, uint16_t data );
 
 #endif
