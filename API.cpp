@@ -1,5 +1,6 @@
 #include "API.h"
 
+
 //--------------------- Function declaration -------------
 boolean readSerial(int *readS);
 
@@ -19,52 +20,53 @@ void addCheckSum(int *frame);
 
 
 // ------------------ Function bodies ------------------------
-
-void buildFrame(uint8_t *pFrame, uint8_t command,uint8_t ch, int data )
+uint16_t builtinBitswap(uint16_t data)
 {
-    uint8_t tempFrame[30];
+    return (data >> 8) | (data << 8);
+}
 
+void buildFrame(uint8_t *pFrame, uint8_t command, uint8_t ch, uint16_t data )
+{
     switch (command)
     {
     case 0x01:
-        ST_GW_VOLTAGE tempStructure;
-        tempStructure.Voltage = data;
-        tempStructure.FrameHeader.Command = command;
-        tempStructure.FrameHeader.Channel = ch;
-        tempStructure.FrameHeader.Length = 0;
-        memcpy(pframe, &tempStructure, sizeof(ST_GW_VOLTAGE));
+        ST_GW_VOLTAGE tempVoltageStructure;
+        tempVoltageStructure.Voltage = builtinBitswap(data);
+        tempVoltageStructure.FrameHeader.Command = command;
+        tempVoltageStructure.FrameHeader.Channel = ch;
+        tempVoltageStructure.FrameHeader.Length = 0;
+        memcpy(pFrame, &tempVoltageStructure, sizeof(ST_GW_VOLTAGE));
         break;
     case 0x02:
-        ST_GW_CURRENT tempStructure;
-        tempStructure.Voltage = data;
-        tempStructure.FrameHeader.Command = command;
-        tempStructure.FrameHeader.Channel = ch;
-        tempStructure.FrameHeader.Length = 0;
-        memcpy(pframe, &tempStructure, sizeof(ST_GW_CURRENT));
+        ST_GW_CURRENT tempCurrentStructure;
+        tempCurrentStructure.Current = builtinBitswap(data);
+        tempCurrentStructure.FrameHeader.Command = command;
+        tempCurrentStructure.FrameHeader.Channel = ch;
+        tempCurrentStructure.FrameHeader.Length = 0;
+        memcpy(pFrame, &tempCurrentStructure, sizeof(ST_GW_CURRENT));
         break;
     case 0x03:
-        ST_GW_SET_CURRENT tempStructure;
-        tempStructure.Voltage = data;
-        tempStructure.FrameHeader.Command = command;
-        tempStructure.FrameHeader.Channel = ch;
-        tempStructure.FrameHeader.Length = 0;
-        memcpy(pframe, &tempStructure, sizeof(ST_GW_SET_CURRENT));
+        ST_GW_SET_CURRENT tempSetCurrentStructure;
+        tempSetCurrentStructure.SetCurrent = builtinBitswap(data);
+        tempSetCurrentStructure.FrameHeader.Command = command;
+        tempSetCurrentStructure.FrameHeader.Channel = ch;
+        tempSetCurrentStructure.FrameHeader.Length = 0;
+        memcpy(pFrame, &tempSetCurrentStructure, sizeof(ST_GW_SET_CURRENT));
         break;
     case 0x04:
-        ST_GW_ACTIVATION tempStructure;
-        tempStructure.Voltage = data;
-        tempStructure.FrameHeader.Command = command;
-        tempStructure.FrameHeader.Channel = ch;
-        tempStructure.FrameHeader.Length = 0;
-        memcpy(pframe, &tempStructure, sizeof(ST_GW_ACTIVATION));
+        ST_GW_ACTIVATION tempActivationStructure;
+        tempActivationStructure.Activation = data;
+        tempActivationStructure.FrameHeader.Command = command;
+        tempActivationStructure.FrameHeader.Channel = ch;
+        tempActivationStructure.FrameHeader.Length = 0;
+        memcpy(pFrame, &tempActivationStructure, sizeof(ST_GW_ACTIVATION));
         break;
     default:
-        Serial.print("Warring, %d is not a command", command);
+        Serial.print("Warring");
+        Serial.print(command);
+        Serial.println("is not a command");
         break;
     }
-    
-
-
 }
 
 boolean getFrame(int *pFrame){

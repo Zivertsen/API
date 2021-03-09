@@ -1,6 +1,6 @@
 #ifndef HEADER_API
 #define HEADER_API
-// #include <Arduino.h>
+#include <Arduino.h>
 #include "FrameStructure.h"
 
 /* SLIP special character codes*/
@@ -13,6 +13,6 @@ boolean getFrame(int *pFrame);
 
 boolean sendFrame(int *pFrame);
 
-void buildFrame(uint8_t *pFrame, int command,int ch, int data );
+void buildFrame(uint8_t *pFrame, uint8_t command, uint8_t ch, uint16_t data );
 
 #endif
